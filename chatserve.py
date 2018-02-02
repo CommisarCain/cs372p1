@@ -10,29 +10,33 @@ import sys
 
 class Chat_Server:
 
-	BUFFER_SZ = 500
 
 	def __init__(self, port, max_clients):
-		self.ssoc = S.socket(S.AF_Inet, S.SOCK_STREAM)
-		self.ssoc.bind((S.gethostname(), port))
+		self.ssoc = S.socket(S.AF_INET, S.SOCK_STREAM)
+		self.ssoc.bind(("127.0.0.1", int(port)))
 		self.ssoc.listen(max_clients)
 		self.clients = []
 		self.client_addresses = []
+		self.BUFFER_SZ = 500
 		print("Server started on port %s" % port)
+		print("Host name: %s" %S.gethostname())
 
 	def handle_New_Conn(self):
 		while True:
-			client, client_address = ssoc.accept()
-		 	print("%s:%s has connected" % client_address)
+			print("Accepting Connections!!!")
+			client, client_address = self.ssoc.accept()
+			print("{} has connected".format(client_address))
 			self.clients.append(client)
 			self.client_addresses.append(client_address)
-			client.send("connected!")
-			Thread(target=client_Thread, args=(client,)).start()
+			client.send("connected!".encode())
+			nt = self.client_Thread
+			Thread(target=nt, args=(client,)).start()
 
 	def client_Thread(self, client):
 		while True:
-			msg = client.recv(BUFFER_SZ)
+			msg = client.recv(self.BUFFER_SZ)
 			if msg:
+				print("broadcast called")
 				self.broadcast(msg, client)
 			else:
 				client.close()
@@ -44,12 +48,14 @@ class Chat_Server:
 				break
 
 	def broadcast(self, msg, client):
+		print(msg)
 		for sock in self.clients:
 			sock.send(msg)
 
 
-
-top_thread = Thread(target=Chat_Server, args=(sys.argv[1], 5)).start()
+cs = Chat_Server(sys.argv[1], 5)
+top_thread = Thread(target=cs.handle_New_Conn)
+top_thread.start()
 top_thread.join()
 
 
