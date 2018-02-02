@@ -50,28 +50,26 @@ int main(int argc, char* argv[]){
 	//clean struct mem
 	bzero((char*) &serv_addr, sizeof(serv_addr));
 		
-	//set server address family	
-	//serv_addr.sin_family = AF_INET;
-	
 	//sets the socket addr info in the 
 	//struct for addresses inside the socket address struct
-	//inet_pton(AF_INET, serverIP, &serv_addr.sin_addr);	
-	//serv_addr.sin_port = htons(s_port);
-	
 	struct addrinfo hints, *res, *p;
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
-	//hints.ai_flags = AI_PASSIVE;
 
+	//make sure address info is reasonable
 	if(getaddrinfo(argv[1], argv[2], &hints, &res) != 0)
 		cout << "ERROR GETTING ADDRESS" << endl;
 	
-	//client = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	
-	printf("Arg addr:%s:%s\n",argv[1],argv[2]); 
-	//if (connect(client, (struct sockaddr*) &serv_addr, sizeof(serv_addr))!=0)
-	
+	printf("Arg addr:%s:%s\n",argv[1],argv[2]);//debug check addresses 
+	/*Holy Smokes. So apparently when you want to get an addr
+	setup it returns a linked list, so you need to iterate over it and figure out
+	which struct is a valid one. I think in a prac app you would need to hand
+	shake with the server better to avoid MiM attacks. You also need to check 
+	if the socket you aquired is a valid socket before checking if it will yield 
+	a connection. After that you need to check if your selected socket is real or if 
+	iterated out of you list and have nothing instead.
+	*/	
 	for(p = res; p!= NULL; p = p->ai_next){
 		if((client = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
 			perror("client : socket failed to aquire\n");
@@ -92,7 +90,7 @@ int main(int argc, char* argv[]){
 	
 	cout << "Connection to the server with port: " << to_string(s_port) << endl;
 	numb = recv(client, rmsg, MSG_SIZE-1, 0);
-	rmsg[numb] = '\0';
+	rmsg[numb] = '\0'; //you recv bytes. Gotta put the null ending in.
 	cout << "Connection confirmed" << endl; 	
 	cout << rmsg << endl;	
 	do{	
@@ -101,6 +99,8 @@ int main(int argc, char* argv[]){
 		getline(cin, umsg);
 		cout << "sending" << endl;
 		int result = send(client, umsg.c_str(), sizeof(umsg.c_str()), 0);
+		// need to check that all bytes are sent. Currently about 4 bytes
+		// are making it out in a transmission
 		printf("Amount of bytes sent: %d \n", result);
 		cout << "sent" << endl;
 		if(umsg.compare(quit_c) == 0){
