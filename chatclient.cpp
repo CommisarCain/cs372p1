@@ -124,27 +124,37 @@ int main(int argc, char* argv[]){
 	umsg.resize(501);
 	cout << "Enter nickname" << endl;
 	getline(cin, user_handle);
+	
 	user_handle.append(1,'>');
+	cout << "user handle appended" << endl;
 	do{	
 		
 		cout << user_handle ;
 		getline(cin, umsg);
+		cout << "got first enrtry" << endl;
 		if(umsg.compare(quit_c) == 0){
 			//close(client);
 			cout << "quitting" << endl;
 			run_state = false;
 			break;
 		}
+		cout << "inserting user handle to msg" << endl;
  		umsg.insert(0,user_handle);
- 
+ 		cout << "insert done" << endl;
  		//cout << "input is: " << umsg << endl;
  		//loop here to ensure total message length was sent
-		int* m_size; 
-		*m_size = umsg.size();
+		int* them_size; 
+		size_t tim;
+		cout << "new int* made" << endl;
+		tim  =  umsg.size();
+		cout << "tim set" << endl;
+		*them_size = (int)tim;
+		cout << "setting new char *" << endl;
 		char* out_msg = new char[umsg.length()+1];
+		cout << "string cpy" << endl;
 		strcpy(out_msg, umsg.c_str()); 
-		//cout << "out_msg: " << out_msg << endl;
-		int result = sendall(client, out_msg, m_size);
+		cout << "out_msg: " << out_msg << endl;
+		int result = sendall(client, out_msg, them_size);
 		delete[] out_msg;
 		//cout << "sent" << endl;
 		//cout << "recieving: ";
