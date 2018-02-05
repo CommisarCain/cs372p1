@@ -9,7 +9,7 @@ chatclient:
 
 g++ chatclient.cpp -o client
 
-./client
+./client [server_address] [port#]
 
 enter user name
 send message
